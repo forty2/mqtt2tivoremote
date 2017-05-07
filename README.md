@@ -1,4 +1,4 @@
-# haiku2mqtt
+# mqtt2tivoremote
 > Make TiVo DVR remote control available through an mqtt-smarthome style interface
 
 [![NPM Version][npm-image]][npm-url]
