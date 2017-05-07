@@ -1,6 +1,6 @@
 {
   "name": "mqtt2tivoremote",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Make TiVo DVR remote control available through an mqtt-smarthome style interface.",
   "bin": {
     "mqtt2tivoremote": "dist/index.js"
