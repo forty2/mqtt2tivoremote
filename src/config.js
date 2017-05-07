@@ -8,12 +8,12 @@ var config = require('yargs')
     .alias({
         'b': 'broker',
         'h': 'help',
-        'n': 'name'
+        'n': 'name',
         'v': 'verbosity'
     })
     .default({
         'b': 'mqtt://127.0.0.1',
-        'n': 'tivoremote'
+        'n': 'tivoremote',
         'v': 'info'
     })
     .check(argv => argv.broker.match(/^(?:mqtt|mqtts|tcp|tls|ws|wss)/))
