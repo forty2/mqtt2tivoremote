@@ -22,7 +22,7 @@ Running it is likewise easy:
 ```sh
 mqtt2tivoremote                      # if your MQTT broker is running on localhost
 mqtt2tivoremote -b mqtt://<hostname> # if your broker is running elsewhere
-haiku2mqtt --help                    # to see the full usage documentation
+mqtt2tivoremote --help               # to see the full usage documentation
 ```
 
 ## Topics and Payloads
