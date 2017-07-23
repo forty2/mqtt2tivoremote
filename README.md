@@ -1,11 +1,10 @@
 # mqtt2tivoremote
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/forty2/mqtt2tivoremote.svg)](https://greenkeeper.io/)
 > Make TiVo DVR remote control available through an mqtt-smarthome style interface
 
 [![Generated with nod](https://img.shields.io/badge/generator-nod-2196F3.svg?style=flat-square)](https://github.com/diegohaz/nod)
 [![NPM version](https://img.shields.io/npm/v/mqtt2tivoremote.svg?style=flat-square)](https://npmjs.org/package/mqtt2tivoremote)
-[![Build Status](https://img.shields.io/travis/forty2/mqtt2tivoremote/master.svg?style=flat-square)](https://travis-ci.org/forty2/mqtt2tivoremote) [![Coverage Status](https://img.shields.io/codecov/c/github/forty2/mqtt2tivoremote/master.svg?style=flat-square)](https://codecov.io/gh/forty2/mqtt2tivoremote/branch/master)
+[![Build Status](https://img.shields.io/travis/forty2/mqtt2tivoremote/master.svg?style=flat-square)](https://travis-ci.org/forty2/mqtt2tivoremote) [![Coverage Status](https://img.shields.io/codecov/c/github/forty2/mqtt2tivoremote/master.svg?style=flat-square)](https://codecov.io/gh/forty2/mqtt2tivoremote/branch/master) [![Greenkeeper badge](https://badges.greenkeeper.io/forty2/mqtt2tivoremote.svg)](https://greenkeeper.io/)
 
 `mqtt2tivoremote` is a Node.js application that links TiVo DVRs to an MQTT broker. It is designed to be used to integrate these devices into a home automation system à la [mqtt-smarthome](http://www.github.com/mqtt-smarthome/mqtt-smarthome/).
 
