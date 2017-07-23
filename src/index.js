@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import 'source-map-support/register';
+
 import log from 'yalm';
 
 import MQTT from 'mqtt';
@@ -7,10 +9,11 @@ import MQTT from 'mqtt';
 import TiVoDiscovery from 'tivo-remote';
 import { Observable, Subject } from 'rxjs';
 
-import config from './config.js';
+import config from './config';
 
 log.setLevel(config.verbosity);
 
+/* eslint-disable max-len */
 /*
     * Topics published:
     * <prefix> expands to tivoremote/<TSN> and tivoremote/<Friendly Name>
@@ -36,82 +39,9 @@ log.setLevel(config.verbosity);
     *                                    status will be reported on <prefix>/status/channel.
     *   - <prefix>/set/forcedChannel  -- as above, but will cancel an in-progress recording if necessary
     */
+/* eslint-enable max-len */
 
 const STATUS_OPTS = { qos: 2, retain: true };
-
-class MQTTBridge {
-    constructor(discoverer) {
-        this._discoverer = discoverer;
-
-        this._clients = { };
-        this._subjects = { };
-    }
-
-    start() {
-        this._discoverer
-            .on('founddevice', ::this._setupNewDevice)
-            .on('lostdevice',  ::this._forgetDevice)
-            .discover();
-    }
-
-    _getTopic(dev, suffix) {
-        return `${config.name}:${dev.id}/${suffix}`;
-    }
-
-    _setupNewDevice(device) {
-        log.debug(`Creating client for ${device.name}`);
-        let client;
-        if (!this._clients[device.id]) {
-            this._clients[device.id] = client = MQTT.connect(config.broker, {
-                will: {
-                    topic:   this._getTopic(device, 'connected'),
-                    payload: '0',
-                    ...STATUS_OPTS
-                }
-            });
-        }
-
-        client.publish(this._getTopic(device, 'connected'), '2', STATUS_OPTS);
-
-        this._subjects[device.id] = new Subject();
-
-        // listen for stuff that needs publishing
-        this.outgoingMessages(device)
-            .takeUntil(this._subjects[device.id])
-            ::publishMessages();
-
-        // listen for incoming messages to act on
-        this._handleIncomingMessages(device)
-    }
-
-    _forgetDevice(device) {
-        this._clients[device.id].publish(
-            this._getTopic(device, 'connected'), '1', STATUS_OPTS);
-
-        this._subjects[device.id].next();
-        this._subjects[device.id] = undefined;
-    }
-
-    _getMessages(client, ...topics) {
-        return new Observable(
-            subscriber => {
-                client.subscribe(topics);
-                client.on('message', (m_topic, msg) => {
-                    if (topics.includes(m_topic)) {
-                        subscriber.next({
-                            topic: m_topic,
-                            message: msg.toString()
-                        })
-                    }
-                });
-
-                return () => {
-                    client.unsubscribe(topics);
-                }
-            }
-        ).catch((_, caught) => caught);
-    }
-}
 
 function publishMessage({ topic, message, client, retain }) {
     client.publish(topic, message !== null ? message.toString() : null, { qos: 2, retain });
@@ -126,6 +56,81 @@ function publishMessages(onError = NOOP, onComplete = NOOP) {
     );
 }
 
+function getMessages(client, ...topics) {
+    return new Observable(
+        (subscriber) => {
+            client.subscribe(topics);
+            client.on('message', (msgTopic, msg) => {
+                if (topics.includes(msgTopic)) {
+                    subscriber.next({
+                        topic: msgTopic,
+                        message: msg.toString(),
+                    });
+                }
+            });
+
+            return () => {
+                client.unsubscribe(topics);
+            };
+        }
+    ).catch((_, caught) => caught);
+}
+
+function getTopic(dev, suffix) {
+    return `${config.name}:${dev.id}/${suffix}`;
+}
+
+class MQTTBridge {
+    constructor(discoverer) {
+        this._discoverer = discoverer;
+
+        this._clients = { };
+        this._subjects = { };
+    }
+
+    start() {
+        this._discoverer
+            .on('founddevice', ::this._setupNewDevice)
+            .on('lostdevice', ::this._forgetDevice)
+            .discover();
+    }
+
+    _setupNewDevice(device) {
+        log.debug(`Creating client for ${device.name}`);
+        let client;
+        if (!this._clients[device.id]) {
+            this._clients[device.id] = MQTT.connect(config.broker, {
+                will: {
+                    topic: getTopic(device, 'connected'),
+                    payload: '0',
+                    ...STATUS_OPTS,
+                },
+            });
+            client = this._clients[device.id];
+        }
+
+        client.publish(getTopic(device, 'connected'), '2', STATUS_OPTS);
+
+        this._subjects[device.id] = new Subject();
+
+        // listen for stuff that needs publishing
+        this.outgoingMessages(device)
+            .takeUntil(this._subjects[device.id])
+            ::publishMessages();
+
+        // listen for incoming messages to act on
+        this._handleIncomingMessages(device);
+    }
+
+    _forgetDevice(device) {
+        this._clients[device.id].publish(
+            getTopic(device, 'connected'), '1', STATUS_OPTS);
+
+        this._subjects[device.id].next();
+        this._subjects[device.id] = undefined;
+    }
+}
+
 class TiVoBridge extends MQTTBridge {
     constructor() {
         super(TiVoDiscovery);
@@ -133,72 +138,75 @@ class TiVoBridge extends MQTTBridge {
     }
 
     outgoingMessages(device) {
-        const topic = p => this._getTopic(device, p);
+        const topic = p => getTopic(device, p);
 
-        return Observable.merge(
-            Observable
-                .fromEvent(device, 'error',
-                    ({ reason }) => ({
-                        topic: topic('status/error'),
-                        message: reason
+        return Observable
+            .merge(
+                Observable
+                    .fromEvent(device, 'error',
+                        ({ reason }) => ({
+                            topic: topic('status/error'),
+                            message: reason,
+                        })),
+
+                Observable
+                    .merge(
+                        Observable
+                            .fromEvent(device, 'livetvready'),
+                        this._livetvTeleports
+                    )
+                    .map(({ isReady }) => ({
+                        topic: topic('status/livetv_ready'),
+                        message: isReady.toString(),
                     })),
 
-            Observable.merge(
                 Observable
-                    .fromEvent(device, 'livetvready'),
-                this._livetvTeleports
+                    .fromEvent(device, 'channelchange',
+                        ({ success, ...rest }) => ({
+                            topic: topic('status/channel'),
+                            message: JSON.stringify(rest),
+                        }))
             )
-            .map(({ isReady }) => ({
-                topic:   topic('status/livetv_ready'),
-                message: isReady.toString()
-            })),
-
-            Observable
-                .fromEvent(device, 'channelchange',
-                    ({ success, ...rest }) => ({
-                        topic: topic('status/channel'),
-                        message: JSON.stringify(rest)
-                    }))
-        )
-        .map(props => ({
-            client: this._clients[device.id],
-            retain: true,
-            ...props
-        }))
+            .map(props => ({
+                client: this._clients[device.id],
+                retain: true,
+                ...props,
+            }));
     }
 
     _handleIncomingMessages(device) {
         const client = this._clients[device.id];
-        const messages = t => this._getMessages(client, this._getTopic(device, t));
+        const messages = t => getMessages(client, getTopic(device, t));
 
-        Observable.merge(
-            messages('set/ircode'),
-            messages('set/keyboard'),
-            messages('set/teleport')
-        )
-        .subscribe(
-            ({ topic, message }) => {
-                let cmd = topic.split('/').pop();
-                if (cmd === 'ircode') {
-                    device.sendIrcode(message);
-                }
-                else if (cmd === 'keyboard') {
-                    device.sendKeyboardCode(message);
-                }
-                else if (cmd === 'teleport') {
-                    if (message === 'livetv') {
-                        this._livetvTeleports({ isReady: false });
+        Observable
+            .merge(
+                messages('set/ircode'),
+                messages('set/keyboard'),
+                messages('set/teleport')
+            )
+            .subscribe(
+                ({ topic, message }) => {
+                    const cmd = topic.split('/').pop();
+                    if (cmd === 'ircode') {
+                        device.sendIrcode(message);
                     }
-                    device.teleport(message);
+                    else if (cmd === 'keyboard') {
+                        device.sendKeyboardCode(message);
+                    }
+                    else if (cmd === 'teleport') {
+                        if (message === 'livetv') {
+                            this._livetvTeleports({ isReady: false });
+                        }
+                        device.teleport(message);
+                    }
+                    else if (cmd === 'channel') {
+                        device.setChannel(message);
+                    }
+                    else if (cmd === 'forcedChannel') {
+                        device.setChannel(message, true);
+                    }
                 }
-                else if (cmd === 'channel') {
-                    device.setChannel(message);
-                }
-                else if (cmd === 'forcedChannel') {
-                    device.setChannel(message, true);
-                }
-            }
-        );
+            );
     }
 }
 

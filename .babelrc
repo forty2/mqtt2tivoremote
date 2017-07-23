@@ -1,0 +1,15 @@
+{
+  "sourceMaps": "inline",
+  "presets": [
+    ["env", {
+      "targets": {
+        "node": 6
+      }
+    }],
+    "flow"
+  ],
+  "plugins": [
+      "transform-function-bind",
+      "transform-object-rest-spread"
+  ]
+}

@@ -1,8 +1,9 @@
 # mqtt2tivoremote
 > Make TiVo DVR remote control available through an mqtt-smarthome style interface
 
-[![NPM Version][npm-image]][npm-url]
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![Generated with nod](https://img.shields.io/badge/generator-nod-2196F3.svg?style=flat-square)](https://github.com/diegohaz/nod)
+[![NPM version](https://img.shields.io/npm/v/mqtt2tivoremote.svg?style=flat-square)](https://npmjs.org/package/mqtt2tivoremote)
+[![Build Status](https://img.shields.io/travis/forty2/mqtt2tivoremote/master.svg?style=flat-square)](https://travis-ci.org/forty2/mqtt2tivoremote) [![Coverage Status](https://img.shields.io/codecov/c/github/forty2/mqtt2tivoremote/master.svg?style=flat-square)](https://codecov.io/gh/forty2/mqtt2tivoremote/branch/master)
 
 `mqtt2tivoremote` is a Node.js application that links TiVo DVRs to an MQTT broker. It is designed to be used to integrate these devices into a home automation system à la [mqtt-smarthome](http://www.github.com/mqtt-smarthome/mqtt-smarthome/).
 
@@ -70,16 +71,10 @@ node dist/index.js
 yarn run clean
 ```
 
-## Release History
 
-* 1.0.0
-    * The first release.
+## License
 
-## Meta
-
-Zach Bean – zb@forty2.com
-
-Distributed under the MIT license. See [LICENSE](LICENSE.md) for more detail.
+MIT © [Zach Bean](https://github.com/forty2). See [LICENSE](LICENSE.md) for more detail.
 
 [npm-image]: https://img.shields.io/npm/v/mqtt2tivoremote.svg?style=flat
 [npm-url]: https://npmjs.org/package/mqtt2tivoremote
