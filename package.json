@@ -1,6 +1,6 @@
 {
   "name": "mqtt2tivoremote",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Make TiVo DVR remote control available through an mqtt-smarthome style interface.",
   "license": "MIT",
   "repository": "forty2/mqtt2tivoremote",
