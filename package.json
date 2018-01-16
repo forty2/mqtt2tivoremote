@@ -63,7 +63,7 @@
   "dependencies": {
     "mqtt": "^2.9.2",
     "rxjs": "^5.4.2",
-    "source-map-support": "^0.4.15",
+    "source-map-support": "^0.5.1",
     "tivo-remote": "^2.1.0",
     "yalm": "^4.0.2",
     "yargs": "^8.0.1"
