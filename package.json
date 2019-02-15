@@ -66,7 +66,7 @@
     "source-map-support": "^0.4.15",
     "tivo-remote": "^2.1.0",
     "yalm": "^4.0.2",
-    "yargs": "^8.0.1"
+    "yargs": "^13.2.0"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
