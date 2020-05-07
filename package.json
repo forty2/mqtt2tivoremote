@@ -61,7 +61,7 @@
     "smarthome"
   ],
   "dependencies": {
-    "mqtt": "^2.9.2",
+    "mqtt": "^4.0.1",
     "rxjs": "^5.4.2",
     "source-map-support": "^0.4.15",
     "tivo-remote": "^2.1.0",
